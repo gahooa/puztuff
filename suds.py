@@ -88,24 +88,23 @@ class Puzzle():
   
   def GCEL(self, col, row):
     return self.Solving[9*row+col]
+  
+  # Excludes specified position from the returned ROW
   def GROW(self, col, row):
-    return [self.Solving[9*row+col] for col in range(9)]
+    return [self.Solving[9*row+c] for c in range(9) if c!=col]
+  
+  # Excludes specified position from the returned COL
   def GCOL(self, col, row):
-    return [self.Solving[9*row+col] for row in range(9)]
+    return [self.Solving[9*r+col] for r in range(9) if r!=row]
+  
+  # Excludes specified position from the returned GRP
   def GGRP(self, col, row):
-    if col in (0,1,2):
-      cols = 0,1,2
-    if col in (3,4,5):
-      cols = 3,4,5
-    if col in (6,7,8):
-      cols = 6,7,8
-    if row in (0,1,2):
-      rows = 0,1,2
-    if row in (3,4,5):
-      rows = 3,4,5
-    if row in (6,7,8):
-      rows = 6,7,8
-    return [self.Solving[9*row+col] for row in rows for col in cols]
+    for chk in ((0,1,2),(3,4,5),(6,7,8)):
+      if col in chk:  
+        cols = chk
+      if row in chk:
+        rows = chk
+    return [self.Solving[9*r+c] for r in rows for c in cols if (col,row) != (c,r)]
 
 
 
