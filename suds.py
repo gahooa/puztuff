@@ -1,6 +1,8 @@
 #!/usr/bin/python3.6
 # vim:fileencoding=utf-8:ts=2:sw=2:expandtab
 
+import itertools
+
 print()
 print('Suds - Suduko Solver')
 print()
@@ -86,6 +88,9 @@ DebugTemplate = ('''
 
 class Puzzle():
   
+  def GALL(self):
+    return [cell for cell in self.Solving]
+  
   def GCEL(self, col, row):
     return self.Solving[9*row+col]
   
@@ -155,6 +160,20 @@ class Puzzle():
         else:
           self.Solving.append({val})
 
+  def Solve(self):
+    for row in range(9):
+      for col in range(9):
+        CEL = self.GCEL(col,row)
+        ROW = self.GROW(col,row)
+        COL = self.GCOL(col,row)
+        GRP = self.GGRP(col,row)
+    
+        if len(CEL) == 1:
+          (val,) = CEL #unpack value
+          for c in itertools.chain(ROW,COL,GRP):
+            c.discard(val)
+
+
 
 
   def Print(self):
@@ -186,6 +205,7 @@ class Puzzle():
       output.append(str(tuple(val)[0]) if len(val) == 1 else ' ')
       output.append(part)
     
+    output.append('\n')
     output = str.join('', output)
 
     print(output)
@@ -208,6 +228,7 @@ class Puzzle():
       output.append(part)
       
     
+    output.append('\n')
     
     output = str.join('', output)
 
@@ -220,8 +241,9 @@ p1 = Puzzle(INPUT)
 p2 = Puzzle(INPUT)
 
 
-p1.PrintDebug()
 p1.Print()
+p1.Solve()
+p1.PrintDebug()
 
     
 
