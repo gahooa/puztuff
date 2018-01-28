@@ -172,9 +172,50 @@ class Puzzle():
           (val,) = CEL #unpack value
           for c in itertools.chain(ROW,COL,GRP):
             c.discard(val)
+    
+    for row in range(9):
+      for col in range(9):
+#        if (col,row) != (2,6):
+#          continue
+
+        CEL = self.GCEL(col,row)
+        ROW = self.GROW(col,row)
+        COL = self.GCOL(col,row)
+        GRP = self.GGRP(col,row)
+        
+#        import pdb
+#        pdb.set_trace()
+
+        for VAL in CEL:
+          found = False
+          for other_cel in GRP:
+            if VAL in other_cel:
+              found = True
+          if not found:
+            CEL.clear()
+            CEL.add(VAL)
+            break
 
 
+  def SP(self):
+    lst = None
+    cnt = 0
+    i = 0
 
+    while True:
+      i += 1
+      lst = cnt
+      cnt = sum(1 for CEL in self.Solving if len(CEL) == 1)
+      
+      if cnt == lst:
+        break
+      
+      print(('Solved' if i > 1 else 'Started with') +  f' {cnt} of 81')
+      self.Solve()
+      self.Print()
+      
+      input('Press Enter')
+      
 
   def Print(self):
     output = []
@@ -241,9 +282,7 @@ p1 = Puzzle(INPUT)
 p2 = Puzzle(INPUT)
 
 
-p1.Print()
-p1.Solve()
-p1.PrintDebug()
+p1.SP()
 
     
 
