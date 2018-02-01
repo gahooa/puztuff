@@ -7,6 +7,10 @@ print()
 print('Suds - Suduko Solver')
 print()
 
+class CELL(set):
+  def __hash__(self):
+    return hash(id(self))
+
 INPUT = '''
 5-- --1 3--
 --- -65 17-
@@ -169,9 +173,9 @@ class Puzzle():
       
         # Build possibilities
         if val is None:
-          self.Solving.append({1,2,3,4,5,6,7,8,9})
+          self.Solving.append(CELL((1,2,3,4,5,6,7,8,9)))
         else:
-          self.Solving.append({val})
+          self.Solving.append(CELL((val,)))
 
   def Solve(self):
     for row in range(9):
