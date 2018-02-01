@@ -7,10 +7,6 @@ print()
 print('Suds - Suduko Solver')
 print()
 
-class CELL(set):
-  def __hash__(self):
-    return hash(id(self))
-
 INPUT = '''
 5-- --1 3--
 --- -65 17-
@@ -103,30 +99,38 @@ DebugTemplate = ('''
 
 ###############################################################################
 
+
+class CELL(set):
+  def __init__(self, col, row, val):
+    set.__init__(self, val)
+    self.col = col
+    self.row = row
+  
+  def __hash__(self):
+    return hash(id(self))
+
+  def __repr__(self):
+    return f'CELL({self.col}, {self.row}, {tuple(self)})'
+
+
 class Puzzle():
   
-  def GALL(self):
-    return [cell for cell in self.Solving]
-  
   def GCEL(self, col, row):
-    return self.Solving[9*row+col]
+    return {self.Solving[9*row+col]}
   
-  # Excludes specified position from the returned ROW
   def GROW(self, col, row):
-    return [self.Solving[9*row+c] for c in range(9) if c!=col]
+    return {self.Solving[9*row+c] for c in range(9)}
   
-  # Excludes specified position from the returned COL
   def GCOL(self, col, row):
-    return [self.Solving[9*r+col] for r in range(9) if r!=row]
+    return {self.Solving[9*r+col] for r in range(9)}
   
-  # Excludes specified position from the returned GRP
   def GGRP(self, col, row):
     for chk in ((0,1,2),(3,4,5),(6,7,8)):
       if col in chk:  
         cols = chk
       if row in chk:
         rows = chk
-    return [self.Solving[9*r+c] for r in rows for c in cols if (col,row) != (c,r)]
+    return {self.Solving[9*r+c] for r in rows for c in cols}
 
 
 
@@ -173,45 +177,69 @@ class Puzzle():
       
         # Build possibilities
         if val is None:
-          self.Solving.append(CELL((1,2,3,4,5,6,7,8,9)))
+          self.Solving.append(CELL(col, row, (1,2,3,4,5,6,7,8,9)))
         else:
-          self.Solving.append(CELL((val,)))
+          self.Solving.append(CELL(col, row, (val,)))
 
   def Solve(self):
+
+    # First tactic is to see if a cell only has a single possibility.  If that is true then
+    # we can discard it from all other positions on that row, col, and grp
     for row in range(9):
       for col in range(9):
         CEL = self.GCEL(col,row)
         ROW = self.GROW(col,row)
         COL = self.GCOL(col,row)
         GRP = self.GGRP(col,row)
-    
-        if len(CEL) == 1:
-          (val,) = CEL #unpack value
-          for c in itertools.chain(ROW,COL,GRP):
+
+        (CEL1,) = CEL #Unpack
+   
+        if len(CEL1) == 1:
+          (val,) = CEL1 #unpack value
+#          import pdb; pdb.set_trace()
+          for c in (ROW | COL | GRP) - CEL:
             c.discard(val)
-    
+   
+    # Second tactic is to see if any of the possible values in a cell are not present on 
+    # the row, col, or group.  If any one of these is true then we know we have an answer.
     for row in range(9):
       for col in range(9):
-#        if (col,row) != (2,6):
-#          continue
 
         CEL = self.GCEL(col,row)
         ROW = self.GROW(col,row)
         COL = self.GCOL(col,row)
         GRP = self.GGRP(col,row)
         
+        CEL1, = CEL #unpack
+
 #        import pdb
 #        pdb.set_trace()
 
-        for VAL in CEL:
-          found = False
-          for other_cel in GRP:
+        NotFound = False
+        for VAL in CEL1:
+          for other_cel in GRP-CEL: 
             if VAL in other_cel:
-              found = True
-          if not found:
-            CEL.clear()
-            CEL.add(VAL)
+              break
+          else:
+            NotFound = True
+          
+          for other_cel in ROW-CEL: 
+            if VAL in other_cel:
+              break
+          else:
+            NotFound = True
+          
+          for other_cel in COL-CEL: 
+            if VAL in other_cel:
+              break
+          else:
+            NotFound = True
+          
+          if NotFound:
+            CEL1.clear()
+            CEL1.add(VAL)
             break
+            
 
 
   def SP(self):
