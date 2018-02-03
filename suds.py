@@ -195,8 +195,6 @@ class Puzzle():
 
   def Solve(self):
 
-    # First tactic is to see if a cell only has a single possibility.  If that is true then
-    # we can discard it from all other positions on that row, col, and grp
     for row in range(9):
       for col in range(9):
         CEL = self.GCEL(col,row)
@@ -206,6 +204,8 @@ class Puzzle():
 
         (CEL1,) = CEL #Unpack
    
+        # First tactic is to see if a cell only has a single possibility.  If that is true then
+        # we can discard it from all other positions on that row, col, and grp
         if len(CEL1) == 1:
           (val,) = CEL1 #unpack value
 #          import pdb; pdb.set_trace()
@@ -213,45 +213,34 @@ class Puzzle():
             if val in c:
               print(f'On {CEL1} Discard {val} from {c}')
               c.discard(val)
+
+
    
-    # Second tactic is to see if any of the possible values in a cell are not present on 
-    # the row, col, or group.  If any one of these is true then we know we have an answer.
-    for row in range(9):
-      for col in range(9):
-
-        CEL = self.GCEL(col,row)
-        ROW = self.GROW(col,row)
-        COL = self.GCOL(col,row)
-        GRP = self.GGRP(col,row)
-        
-        CEL1, = CEL #unpack
-
-#        import pdb
-#        pdb.set_trace()
-
+        # Second tactic is to see if any of the possible values in a cell are not present on 
+        # the row, col, or group.  If any one of these is true then we know we have an answer.
         NotFound = False
-        for VAL in CEL1:
+        for val in CEL1:
           for other_cel in GRP-CEL: 
-            if VAL in other_cel:
+            if val in other_cel:
               break
           else:
             NotFound = True
           
           for other_cel in ROW-CEL: 
-            if VAL in other_cel:
+            if val in other_cel:
               break
           else:
             NotFound = True
           
           for other_cel in COL-CEL: 
-            if VAL in other_cel:
+            if val in other_cel:
               break
           else:
             NotFound = True
           
           if NotFound:
             CEL1.clear()
-            CEL1.add(VAL)
+            CEL1.add(val)
             break
             
 
