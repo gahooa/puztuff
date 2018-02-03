@@ -7,19 +7,33 @@ print()
 print('Suds - Suduko Solver')
 print()
 
+# Easy
 INPUT = '''
-5-- --1 3--
---- -65 17-
---- 4-- -25
-
--6- -7- -3-
--75 --- 68-
--8- -4- -1-
-
-82- --6 ---
--56 38- ---
---1 7-- --3
+5----13--
+----6517-
+---4---25
+-6--7--3-
+-75---68-
+-8--4--1-
+82---6---
+-5638----
+--17----3
 '''
+
+# Medium
+INPUT = '''
+8625-----
+-54-----8
+-1--6-2--
+5376----2
+6--7-4--3
+2----5976
+--5-1--3-
+3-----61-
+-----8524
+'''
+
+# Hard
 INPUT = '''
 ---67----
 -26-4-3--
@@ -31,8 +45,6 @@ INPUT = '''
 --5-8-76-
 ----54---
 '''
-
-
 
 PrintTemplate = ('''
 ┌───┬───┬───╥───┬───┬───╥───┬───┬───┐
@@ -198,7 +210,9 @@ class Puzzle():
           (val,) = CEL1 #unpack value
 #          import pdb; pdb.set_trace()
           for c in (ROW | COL | GRP) - CEL:
-            c.discard(val)
+            if val in c:
+              print(f'On {CEL1} Discard {val} from {c}')
+              c.discard(val)
    
     # Second tactic is to see if any of the possible values in a cell are not present on 
     # the row, col, or group.  If any one of these is true then we know we have an answer.
@@ -260,9 +274,10 @@ class Puzzle():
       print(('Solved' if i > 1 else 'Started with') +  f' {cnt} of 81')
       self.Solve()
       self.Print()
-      
+
       input('Press Enter')
       
+    self.PrintDebug()
 
   def Print(self):
     output = []
