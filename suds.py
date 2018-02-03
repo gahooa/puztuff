@@ -9,41 +9,78 @@ print()
 
 # Easy
 INPUT = '''
-5----13--
-----6517-
----4---25
--6--7--3-
--75---68-
--8--4--1-
-82---6---
--5638----
---17----3
+5 - - - - 1 3 - -
+- - - - 6 5 1 7 -
+- - - 4 - - - 2 5
+- 6 - - 7 - - 3 -
+- 7 5 - - - 6 8 -
+- 8 - - 4 - - 1 -
+8 2 - - - 6 - - -
+- 5 6 3 8 - - - -
+- - 1 7 - - - - 3
 '''
 
 # Medium
 INPUT = '''
-8625-----
--54-----8
--1--6-2--
-5376----2
-6--7-4--3
-2----5976
---5-1--3-
-3-----61-
------8524
+8 6 2 5 - - - - -
+- 5 4 - - - - - 8
+- 1 - - 6 - 2 - -
+5 3 7 6 - - - - 2
+6 - - 7 - 4 - - 3
+2 - - - - 5 9 7 6
+- - 5 - 1 - - 3 -
+3 - - - - - 6 1 -
+- - - - - 8 5 2 4
 '''
 
 # Hard
 INPUT = '''
----67----
--26-4-3--
--4----89-
-8----5---
-13--6--82
----8----4
--83----4-
---5-8-76-
-----54---
+- - - 6 7 - - - -
+- 2 6 - 4 - 3 - -
+- 4 - - - - 8 9 -
+8 - - - - 5 - - -
+1 3 - - 6 - - 8 2
+- - - 8 - - - - 4
+- 8 3 - - - - 4 -
+- - 5 - 8 - 7 6 -
+- - - - 5 4 - - -
+'''
+
+# 554
+INPUT = '''
+4 _ _ 7 6 _ _ 2 _
+_ 2 _ _ _ _ _ 7 _
+_ _ _ 4 _ 2 _ _ 8
+_ 7 _ _ _ _ 6 _ _
+_ 8 _ 9 3 6 _ 4 _
+_ _ 1 _ _ _ _ 5 _
+7 _ _ 5 _ 1 _ _ _
+_ 9 _ _ _ _ _ 1 _
+_ 5 _ _ 8 7 _ _ 9
+'''
+
+INPUT = '''
+_ _ 8 _ _ _ 1 _ _
+9 _ _ 2 3 _ _ _ 5
+_ _ _ _ 1 6 _ _ _
+_ 3 6 _ 8 _ _ _ 7
+_ 7 9 _ _ _ 6 5 _
+2 _ _ _ 6 _ 4 3 _
+_ _ _ 4 9 _ _ _ _
+5 _ _ _ 7 1 _ _ 9
+_ _ 4 _ _ _ 3 _ _
+'''
+
+INPUT = '''
+_ _ _ _ _ 7 _ _ 8
+_ _ _ 3 4 _ 9 _ _
+9 _ 8 _ _ _ _ 1 7
+_ 6 _ 4 _ _ _ _ 1
+_ _ 9 _ _ _ 8 _ _
+1 _ _ _ _ 5 _ 2 _
+8 2 _ _ _ _ 7 _ 6
+_ _ 1 _ 7 4 _ _ _
+5 _ _ 2 _ _ _ _ _
 '''
 
 PrintTemplate = ('''
@@ -168,7 +205,7 @@ class Puzzle():
       col = -1
       for char in line:
         # Skip spaces and other characters
-        if char not in '-123456789':
+        if char not in '_-123456789':
           continue
 
         # Advance to next column
@@ -179,7 +216,7 @@ class Puzzle():
           raise ValueError(f'More than 9 columns encountered in (non-empty) row #{row}')
 
         # Convert to inteeger or None
-        if char == '-':
+        if char in '-_':
           val = None
         else:
           val = int(char)
@@ -211,7 +248,7 @@ class Puzzle():
 #          import pdb; pdb.set_trace()
           for c in (ROW | COL | GRP) - CEL:
             if val in c:
-              print(f'On {CEL1} Discard {val} from {c}')
+#              print(f'On {CEL1} Discard {val} from {c}')
               c.discard(val)
 
 
@@ -242,26 +279,51 @@ class Puzzle():
             CEL1.clear()
             CEL1.add(val)
             break
-            
+        
+        # Third tactic is to see if any numbers ONLY exist in the current subrow or subcolumn
+        # inside the current group.  If they do then remove them from that row or column in 
+        # the other 2 groups that it goes through
+
+        for RC in ROW,COL:
+          subset = GRP.intersection(RC)
+          subset_numbers = set(itertools.chain(*(s for s in subset if len(s) > 1)))
+          others = GRP - subset
+          others_numbers = set(itertools.chain(*others))
+          extern = RC - subset
+          
+          only_in_subset = subset_numbers - others_numbers
+        
+          if only_in_subset:
+            for cel in extern:
+              for n in only_in_subset:
+                if n in cel:
+                  print(f'Discarding {n} from {cel} because subset only has {only_in_subset}')
+                  cel.remove(n)
+
+
+
 
 
   def SP(self):
     lst = None
-    cnt = 0
+    cur = None 
     i = 0
 
     print(f'\n{"#"*80}\n')
 
     while True:
       i += 1
-      lst = cnt
-      cnt = sum(1 for CEL in self.Solving if len(CEL) == 1)
+      lst = cur
+      cur = [sorted(cel) for cel in self.Solving]
+      cnt = sum(1 for cel in self.Solving if len(cel) == 1)
+      cntp = sum(len(cel) for cel in self.Solving if len(cel) > 1)
       
-      if cnt == lst:
+      if cur == lst:
         break
       
-      print(('Solved' if i > 1 else 'Started with') +  f' {cnt} of 81')
       self.Solve()
+      
+      print(('Solved' if i > 1 else 'Started with') +  f' {cnt} of 81 solved with {cntp} possiblities left')
       self.Print()
 
       input('Press Enter')
